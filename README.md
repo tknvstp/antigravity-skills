@@ -2,6 +2,10 @@
 
 为 [Antigravity](https://developers.google.com/idx/guides/get-started-antigravity) 平台设计的 Skills 和 Workflows，帮助扩展 AI Agent 能力。
 
+本项目致力于实现两个核心目标：
+1. **Skill 迁移**：将 Claude Code Skills 转换为符合 Antigravity 特性（如 task_boundary, browser_subagent）的 rule 或 workflow。
+2. **Skill 创建**：支持基于自然语言创建符合规范的 rule 或 workflow，快速扩展 Agent 能力。
+
 > **Antigravity** 是 Google 推出的 AI 辅助编程工具，基于 VS Code 构建，集成了强大的 AI Agent 功能。
 
 ---
