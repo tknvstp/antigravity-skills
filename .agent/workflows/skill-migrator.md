@@ -22,6 +22,31 @@ description: 将 Claude Code Skills 迁移到 Antigravity 格式。当用户想�
 
 ---
 
+## 迁移决策
+
+### 目标格式选择
+
+```
+原 Claude Code Skill 的用途是...
+├── 代码规范、自动检查类 → 迁移为 Rule
+│   └── 放置于 .agent/rules/{skill-name}.md
+├── 复杂多步骤流程类 → 迁移为 Workflow
+│   └── 放置于 .agent/workflows/{skill-name}.md
+└── 不确定？ → 默认选择 Workflow（更灵活）
+```
+
+### 资源需求判断
+
+```
+原 Skill 包含...
+├── 可执行脚本 (Python/Bash/Node) → 迁移到 scripts/
+├── 背景文档/API说明/架构图 → 迁移到 references/
+├── 模板/logo/配置骨架 → 迁移到 assets/
+└── 仅 SKILL.md → 无需 resources/ 目录
+```
+
+---
+
 ## 迁移步骤
 
 ### 阶段 1：规划与分析 (Mode: PLANNING)
@@ -40,14 +65,45 @@ mkdir -p .agent/resources/{skill-name}/{scripts,references,assets}
 ```
 
 #### 2. 迁移资源文件
+
+根据资源类型分别处理：
+
+**Scripts 迁移**：
 // turbo
 ```bash
-# 复制脚本
 cp {原路径}/scripts/* .agent/resources/{skill-name}/scripts/
-# 复制参考文档
+```
+
+迁移后更新 Workflow 中的调用方式：
+```diff
+- 运行 scripts/process.py
++ 使用 `run_command` 执行：
++ python {工作区根目录}/.agent/resources/{skill-name}/scripts/process.py [参数]
+```
+
+**References 迁移**：
+// turbo
+```bash
 cp {原路径}/references/* .agent/resources/{skill-name}/references/
-# 复制资产
+```
+
+迁移后更新 Workflow 中的引用方式：
+```diff
+- 参考 `references/api.md`
++ 请使用 `view_file` 阅读：`{工作区根目录}/.agent/resources/{skill-name}/references/api.md`
+```
+
+**Assets 迁移**：
+// turbo
+```bash
 cp {原路径}/assets/* .agent/resources/{skill-name}/assets/
+```
+
+迁移后更新 Workflow 中的使用方式：
+```diff
+- 使用 assets/template.html 作为模板
++ 使用 `run_command` 复制模板到输出目录：
++ cp {工作区根目录}/.agent/resources/{skill-name}/assets/template.html ./output/
 ```
 
 #### 3. 编写 Workflow 文件 (`.agent/workflows/{skill-name}.md`)

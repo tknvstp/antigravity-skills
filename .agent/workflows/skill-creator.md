@@ -18,6 +18,28 @@ Skills 是模块化的、自包含的包，通过提供专业知识、工作流�
 3. **领域专长** - 公司特定的知识、架构、业务逻辑
 4. **打包资源** - 用于复杂重复任务的脚本、参考资料和资产
 
+### 选择 Rule 还是 Workflow
+
+在 Antigravity 中，你可以创建两种类型的 Skill：
+
+| 维度 | Rule (`.agent/rules/`) | Workflow (`.agent/workflows/`) |
+|-----|------------------------|-------------------------------|
+| **触发方式** | 自动/手动/模型判断 | 用户显式调用 (`/命令名`) |
+| **适用场景** | 代码规范、风格约束、自动检查 | 复杂多步骤任务、专业领域流程 |
+| **资源依赖** | 通常无或很少 | 可能需要 scripts/assets/references |
+| **示例** | 代码审查规则、命名规范 | PDF 处理、项目初始化、文档生成 |
+
+**决策树**：
+
+```
+你的能力需要...
+├── 在特定场景自动激活？ → Rule (trigger: model)
+├── 始终生效？ → Rule (trigger: always)
+├── 用户手动选择激活？ → Rule (trigger: manual) 或 Workflow
+└── 用户通过 /命令 显式调用？ → Workflow
+    └── 需要打包资源 (脚本/模板/参考文档)？ → Workflow + resources/
+```
+
 ## 核心原则
 
 ### 简洁至上 (Concise is Key)
@@ -62,28 +84,93 @@ Antigravity Skill 由位于 `.agent/workflows/` 的主文件和位于 `.agent/re
 
 #### 打包资源 (`.agent/resources/skill-name/`)
 
+资源目录包含三类文件，各有不同用途和使用方式：
+
 ##### Scripts (`scripts/`)
 
-需要确定性可靠性或重复重写的任务的可执行代码。
+**定义**：需要确定性可靠性或避免重复重写的可执行代码。
 
-- **何时包含**：当代码被重复重写或需要确定性时
-- **示例**：`scripts/rotate_pdf.py` 用于 PDF 旋转任务
-- **优点**：Token 高效、确定性、甚至可以在不加载到上下文的情况下执行
+**何时需要**：
+- 复杂计算或转换（PDF 处理、数据解析）
+- 需要外部依赖的操作（调用系统命令、库函数）
+- 重复任务中追求一致性
+
+**使用方式**：
+在 Workflow Body 中指导 Agent 执行：
+```markdown
+## 步骤 2：处理 PDF
+使用 `run_command` 执行：
+```bash
+python {工作区根目录}/.agent/resources/{skill-name}/scripts/rotate_pdf.py --input input.pdf --output output.pdf
+```
+```
+
+**设计原则**：
+- 使用命令行参数接收输入
+- 输出清晰的状态信息
+- 返回明确的退出码
+
+---
 
 ##### References (`references/`)
 
-旨在按需加载到上下文中以告知 Agent 过程和思维的文档和参考资料。
+**定义**：Agent 在工作过程中需要按需加载到上下文的知识文档。
 
-- **何时包含**：Agent 在工作时需要参考的文档
-- **示例**：`references/finance.md` (财务架构), `references/api_docs.md` (API 规范)
-- **最佳实践**：如果文件很大 (>10k words)，在 Workflow 中包含 grep 搜索模式。避免重复——信息应存在于 Workflow 或 Reference 中，而非两者都存。
+**何时需要**：
+- 领域知识过于庞大无法全部放入 Workflow Body（>500 行）
+- 信息可能按需选择性使用
+- 内容需要独立维护更新
+
+**使用方式**：
+在 Workflow Body 中提供加载引导：
+```markdown
+## 背景知识
+在开始前，**必须**使用 `view_file` 阅读：
+- API 规范：`{工作区根目录}/.agent/resources/{skill-name}/references/api.md`
+
+如需深入了解架构，可选阅读：
+- 架构文档：`{工作区根目录}/.agent/resources/{skill-name}/references/architecture.md`
+```
+
+**与 Workflow Body 的关系**：
+| 放在 Workflow Body | 放在 References |
+|-------------------|----------------|
+| 核心指令和步骤 | 背景知识和详细说明 |
+| 始终需要的信息 | 按需加载的信息 |
+| <500 行 | 可以很大 |
+
+---
 
 ##### Assets (`assets/`)
 
-不打算加载到上下文中，而是用于 Agent 产生的输出中的文件。
+**定义**：不加载到上下文，而是用于 Agent 产出物的文件。
 
-- **何时包含**：当 Skill 需要用于最终输出的文件时
-- **示例**：`assets/logo.png` (品牌资产), `assets/template.html` (前端模板)
+**何时需要**：
+- 输出需要固定的模板结构
+- 需要嵌入品牌资产（logo、图标）
+- 提供项目骨架或配置模板
+
+**使用方式**：
+在 Workflow Body 中指导复制或引用：
+```markdown
+## 步骤 3：生成报告
+1. 复制模板到输出目录：
+   ```bash
+   cp {工作区根目录}/.agent/resources/{skill-name}/assets/template.html ./output/
+   ```
+2. 将 logo 复制到输出目录：
+   ```bash
+   cp {工作区根目录}/.agent/resources/{skill-name}/assets/logo.png ./output/
+   ```
+```
+
+**常见类型**：
+| 类型 | 示例 | 使用场景 |
+|-----|------|--------|
+| 模板文件 | `template.html`, `report.md` | 报告生成、页面输出 |
+| 品牌资产 | `logo.png`, `icon.svg` | 需要一致品牌的输出 |
+| 配置骨架 | `config.json`, `.env.example` | 项目初始化 |
+| 代码骨架 | `hello-world/` | Webapp 脚手架 |
 
 ### 渐进式披露设计原则 (Progressive Disclosure)
 

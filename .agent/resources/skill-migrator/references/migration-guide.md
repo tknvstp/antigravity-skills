@@ -46,3 +46,45 @@
 # 假设工作区根目录为 /Users/user/project
 view_file /Users/user/project/.agent/resources/my-skill/references/manual.md
 ```
+
+## 5. 资源类型使用规范
+
+### Scripts 执行规范
+
+| 脚本类型 | 执行命令格式 |
+|---------|-------------|
+| Python | `python {path}/scripts/xxx.py [args]` |
+| Bash | `bash {path}/scripts/xxx.sh [args]` |
+| Node.js | `node {path}/scripts/xxx.js [args]` |
+
+**设计要求**：
+- 通过命令行参数接收输入
+- 输出清晰的状态/错误信息
+- 返回有意义的退出码
+
+### References 引用规范
+
+| 场景 | Workflow 中的写法 |
+|-----|-------------------|
+| 必须阅读 | `**必须**使用 \`view_file\` 阅读：{path}` |
+| 可选阅读 | `如需深入了解，可选阅读：{path}` |
+| 大文件检索 | `使用 \`grep_search\` 在 {path} 中搜索 "关键词"` |
+
+**最佳实践**：
+- 避免将信息同时放在 Workflow Body 和 References 中
+- 对于 >10k words 的文件，提供 grep 搜索模式
+
+### Assets 使用规范
+
+| 场景 | 操作命令 |
+|-----|---------|
+| 复制到输出 | `cp {path}/assets/file ./output/` |
+| 批量复制 | `cp -r {path}/assets/* ./output/` |
+| 模板替换 | 先复制，再用 `replace_file_content` 修改占位符 |
+
+**常见 Assets 类型**：
+- 模板文件：HTML/Markdown 骨架
+- 品牌资产：Logo、图标、字体
+- 配置骨架：JSON/YAML 配置模板
+- 代码脚手架：项目初始化模板目录
+

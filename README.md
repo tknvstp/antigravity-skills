@@ -18,11 +18,15 @@
 │   ├── skill-creator.md            # 创建新 skill 的指南
 │   └── skill-migrator.md           # 从 Claude Code 迁移 skill 的指南
 └── resources/                      # 辅助资源
-    └── skill-creator/
+    ├── skill-creator/
+    │   └── references/
+    │       ├── antigravity-reference.md  # Antigravity 平台核心能力参考
+    │       ├── workflows.md              # 工作流模式示例
+    │       └── output-patterns.md        # 输出格式模式示例
+    └── skill-migrator/
         └── references/
             ├── antigravity-reference.md  # Antigravity 平台核心能力参考
-            ├── workflows.md              # 工作流模式示例
-            └── output-patterns.md        # 输出格式模式示例
+            └── migration-guide.md        # 迁移映射规则和资源使用规范
 ```
 
 ---
@@ -58,6 +62,8 @@ cp -r .agent/ /your/project/root/
 - 集成工具和脚本
 
 **核心特性**：
+- **Rule vs Workflow 选择指南**：决策树帮助判断应创建 Rule 还是 Workflow
+- **完整的资源使用规范**：scripts/references/assets 三类资源的定义、适用场景和使用方式
 - 渐进式披露设计（元数据 → 主体 → 资源）
 - Antigravity 工具集成指导
 - 模式切换建议（PLANNING / EXECUTION / VERIFICATION）
@@ -72,9 +78,10 @@ cp -r .agent/ /your/project/root/
 - 保持 skill 功能的同时优化结构
 
 **核心特性**：
+- **迁移决策指南**：目标格式选择（Rule vs Workflow）+ 资源需求判断
+- **完整的资源迁移步骤**：scripts/references/assets 的复制命令和引用更新 diff 示例
 - 格式映射表（Claude Code → Antigravity）
 - 能力增强映射（新增 browser_subagent, generate_image 等）
-- 迁移决策树和验证清单
 
 ---
 
