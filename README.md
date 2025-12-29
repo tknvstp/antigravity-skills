@@ -19,9 +19,10 @@
 │   └── skill-migrator.md           # 从 Claude Code 迁移 skill 的指南
 └── resources/                      # 辅助资源
     └── skill-creator/
-        ├── antigravity-reference.md  # Antigravity 平台核心能力参考
-        ├── workflows.md              # 工作流模式示例
-        └── output-patterns.md        # 输出格式模式示例
+        └── references/
+            ├── antigravity-reference.md  # Antigravity 平台核心能力参考
+            ├── workflows.md              # 工作流模式示例
+            └── output-patterns.md        # 输出格式模式示例
 ```
 
 ---
@@ -89,7 +90,7 @@ cp -r .agent/ /your/project/root/
 | `generate_image` | 图像生成和编辑 |
 | Artifact System | task.md / implementation_plan.md / walkthrough.md |
 
-详细说明请参考 [antigravity-reference.md](.agent/resources/skill-creator/antigravity-reference.md)。
+详细说明请参考 [antigravity-reference.md](.agent/resources/skill-creator/references/antigravity-reference.md)。
 
 ---
 

@@ -17,7 +17,7 @@ description: 将 Claude Code Skills 迁移到 Antigravity 格式。当用户想�
 **首先阅读平台参考**：使用 `view_file` 读取 Antigravity 平台背景知识：
 
 ```
-{工作区根目录}/.agent/resources/skill-creator/antigravity-reference.md
+{工作区根目录}/.agent/resources/skill-creator/references/antigravity-reference.md
 ```
 
 该文档包含：
@@ -197,7 +197,7 @@ description: 简短描述功能。包含触发场景。
 # 标题
 
 ## 背景知识
-使用 `view_file` 读取：`{根目录}/.agent/resources/skill-creator/antigravity-reference.md`
+使用 `view_file` 读取：`{根目录}/.agent/resources/skill-creator/references/antigravity-reference.md`
 
 ## 概述
 ...
@@ -323,9 +323,10 @@ Read [`docx-js.md`](docx-js.md) for details.
 .agent/
 ├── workflows/skill-creator.md
 └── resources/skill-creator/
-    ├── workflows.md
-    ├── output-patterns.md
-    └── antigravity-reference.md
+    └── references/
+        ├── workflows.md
+        ├── output-patterns.md
+        └── antigravity-reference.md
 ```
 
 ---

@@ -17,7 +17,7 @@ description: 创建新的 skill 或 workflow，扩展 Agent 能力。当用户�
 **首先阅读平台参考**：使用 `view_file` 读取 Antigravity 平台背景知识：
 
 ```
-{工作区根目录}/.agent/resources/skill-creator/antigravity-reference.md
+{工作区根目录}/.agent/resources/skill-creator/references/antigravity-reference.md
 ```
 
 ---
@@ -99,7 +99,7 @@ Skills 使用三级加载系统高效管理上下文：
 
 ```markdown
 使用 `view_file` 工具读取参考文档。路径格式：
-`{工作区根目录}/.agent/resources/skill-creator/{文件名}`
+`{工作区根目录}/.agent/resources/skill-creator/references/{文件名}`
 
 | 内容 | 文件名 |
 |-----|--------|
@@ -229,9 +229,9 @@ globs:          # 可选，文件类型过滤
 
 需要了解更多模式时，使用 `view_file` 读取：
 
-- **多步骤流程**：`{根目录}/.agent/resources/skill-creator/workflows.md`
-- **输出格式/质量标准**：`{根目录}/.agent/resources/skill-creator/output-patterns.md`
-- **Antigravity 平台能力**：`{根目录}/.agent/resources/skill-creator/antigravity-reference.md`
+- **多步骤流程**：`{根目录}/.agent/resources/skill-creator/references/workflows.md`
+- **输出格式/质量标准**：`{根目录}/.agent/resources/skill-creator/references/output-patterns.md`
+- **Antigravity 平台能力**：`{根目录}/.agent/resources/skill-creator/references/antigravity-reference.md`
 
 ---
 
