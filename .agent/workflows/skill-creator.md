@@ -1,240 +1,183 @@
 ---
-description: 创建新的 skill 或 workflow，扩展 Agent 能力。当用户想创建/更新一个扩展 Claude 能力的 skill（包含专业知识、工作流或工具集成）时使用。
+name: skill-creator
+description: 创建高质量 Antigravity Skill 的指南。当用户想要创建新 Skill（或更新现有 Skill）以使用专业知识、工作流或工具集成扩展 Agent 能力时使用此 Skill。
 ---
 
 # Skill Creator
 
-本 workflow 指导如何在 Antigravity 平台创建有效的 skills。
-
-> **参考来源**：
-> - [Claude Code Skills](https://github.com/anthropics/courses/tree/master/prompt_engineering_interactive_tutorial) - Anthropic 官方 Skills 设计
-> - [tfriedel/antigravity_prompts](https://github.com/tfriedel/antigravity_prompts) - Antigravity 系统 prompt 参考
-
----
-
-## 背景知识
-
-**首先阅读平台参考**：使用 `view_file` 读取 Antigravity 平台背景知识：
-
-```
-{工作区根目录}/.agent/resources/skill-creator/references/antigravity-reference.md
-```
-
----
+本 Skill 提供了创建高效 Antigravity Skills 的完整指南和规范。
 
 ## 关于 Skills
 
-Skills 是模块化、自包含的包，通过提供专业知识、工作流和工具来扩展 Agent 能力。可将其视为特定领域或任务的"入职指南"——将通用 Agent 转变为具备程序性知识的专业 Agent。
+Skills 是模块化的、自包含的包，通过提供专业知识、工作流和工具来扩展 Agent 的能力。把它们看作是特定领域或任务的"入职指南"——它们将 Agent 从通用助手转变为具备专业程序性知识的专家。
 
 ### Skills 提供什么
 
 1. **专业工作流** - 特定领域的多步骤程序
 2. **工具集成** - 处理特定文件格式或 API 的指令
-3. **领域专业知识** - 公司特定知识、数据模式、业务逻辑
-4. **资源打包** - 脚本、参考资料和复杂重复任务的资产
-
----
+3. **领域专长** - 公司特定的知识、架构、业务逻辑
+4. **打包资源** - 用于复杂重复任务的脚本、参考资料和资产
 
 ## 核心原则
 
-### 简洁是关键
+### 简洁至上 (Concise is Key)
 
-上下文窗口是公共资源。Skills 与系统提示、对话历史、其他 Skills 元数据和实际用户请求共享上下文窗口。
+上下文窗口是公共资源。Skills 与其他所有内容共享它：系统提示、对话历史、其他 Skill 的元数据以及用户的实际请求。
 
-**默认假设：Agent 已经非常智能。** 只添加 Agent 尚不具备的上下文。质疑每条信息："Agent 真的需要这个解释吗？" "这段内容值得占用 token 吗？"
+**默认假设：Agent 已经非常聪明。** 只添加 Agent 尚未拥有的上下文。对每条信息进行挑战："Agent 真的需要这个解释吗？"以及"这段内容值得它的 token 成本吗？"
 
-优先使用简洁示例而非冗长解释。
+相比冗长的解释，更倾向于使用简洁的示例。
 
-### 设置适当的自由度
+### 设定适当的自由度 (Set Appropriate Degrees of Freedom)
 
-根据任务的脆弱性和可变性匹配具体程度：
+将特异性水平与任务的脆弱性和可变性相匹配：
 
-| 自由度 | 适用场景 | 实现方式 |
-|-------|---------|---------| 
-| 高 | 多种方法都有效，决策依赖上下文 | 文本指令 |
-| 中 | 存在首选模式，可接受一定变化 | 伪代码或带参数的脚本 |
-| 低 | 操作脆弱易错，一致性关键 | 具体脚本，少量参数 |
+- **高自由度 (文本指令)**：当多种方法有效、决策取决于上下文或由启发式指导时使用。
+- **中自由度 (伪代码或带参数的脚本)**：当存在首选模式、可接受一定变化或配置影响行为时使用。
+- **低自由度 (特定脚本、少量参数)**：当操作脆弱且易错、一致性至关重要或必须遵循特定顺序时使用。
 
----
+把 Agent 想象成在探路：狭窄的桥梁需要特定的护栏（低自由度），而开阔的田野允许许多路线（高自由度）。
 
-## Skill 结构（Antigravity 格式）
+### Skill 解剖结构 (Anatomy of a Skill)
 
-在 Antigravity 中，skills 以 `.agent/` 目录结构组织：
+Antigravity Skill 由位于 `.agent/workflows/` 的主文件和位于 `.agent/resources/` 的可选资源组成：
 
 ```
 .agent/
-├── workflows/              # 斜线命令触发的工作流 (/命令名)
-│   └── skill-name.md
-├── rules/                  # 自动/手动激活的规则
-│   └── skill-name.md
-└── resources/              # 辅助资源
-    └── skill-name/
-        ├── scripts/        # 可执行脚本
-        ├── references/     # 参考文档（可按需读取）
-        └── assets/         # 输出资源（模板、图标等）
+├── workflows/
+│   └── skill-name.md        (必需，包含元数据和指令)
+└── resources/
+    └── skill-name/          (可选，打包资源)
+        ├── scripts/         - 可执行代码 (Python/Bash 等)
+        ├── references/      - 需按需加载到上下文的文档
+        └── assets/          - 用于输出的文件 (模板、图标等)
 ```
 
-### Workflow vs Rule
+#### Workflows 文件 (`.agent/workflows/*.md`)
 
-| 类型 | 触发方式 | 适用场景 |
-|-----|---------|---------| 
-| Workflow | 用户主动调用 `/命令` | 流程导向、多步骤任务 |
-| Rule (trigger: model) | 模型根据描述自动激活 | 工具类、格式处理类 |
-| Rule (trigger: always) | 始终生效 | 全局约束、编码规范 |
-| Rule (trigger: manual) | 用户 `@文件名` 引用 | 按需参考的指南 |
+每个 Workflow 文件包含：
 
----
+- **Frontmatter** (YAML): 包含 `name` 和 `description` 字段。这是 Agent 决定何时使用该 Skill 的唯一依据，因此清晰全面地描述 Skill 的功能及适用场景至关重要。
+- **Body** (Markdown): 使用 Skill 的指令和指南。仅在 Skill 触发后加载（如果触发）。
 
-## 渐进式披露设计
+#### 打包资源 (`.agent/resources/skill-name/`)
+
+##### Scripts (`scripts/`)
+
+需要确定性可靠性或重复重写的任务的可执行代码。
+
+- **何时包含**：当代码被重复重写或需要确定性时
+- **示例**：`scripts/rotate_pdf.py` 用于 PDF 旋转任务
+- **优点**：Token 高效、确定性、甚至可以在不加载到上下文的情况下执行
+
+##### References (`references/`)
+
+旨在按需加载到上下文中以告知 Agent 过程和思维的文档和参考资料。
+
+- **何时包含**：Agent 在工作时需要参考的文档
+- **示例**：`references/finance.md` (财务架构), `references/api_docs.md` (API 规范)
+- **最佳实践**：如果文件很大 (>10k words)，在 Workflow 中包含 grep 搜索模式。避免重复——信息应存在于 Workflow 或 Reference 中，而非两者都存。
+
+##### Assets (`assets/`)
+
+不打算加载到上下文中，而是用于 Agent 产生的输出中的文件。
+
+- **何时包含**：当 Skill 需要用于最终输出的文件时
+- **示例**：`assets/logo.png` (品牌资产), `assets/template.html` (前端模板)
+
+### 渐进式披露设计原则 (Progressive Disclosure)
 
 Skills 使用三级加载系统高效管理上下文：
 
-1. **元数据（description）** - 始终在上下文中（~100 词）
-2. **主体内容** - 触发后加载（<5k 词）
-3. **资源文件** - 按需由 Agent 读取（无限制）
+1. **Metadata (name + description)** - 始终在上下文中 (~100 words)
+2. **Workflow Body** - 当 Skill 触发时 (<5k words)
+3. **Bundled resources** - 按需加载
 
-### 引用外部文件的正确方式
+#### 渐进式披露模式
 
-**关键**：Antigravity 需要明确指导才能正确读取外部文件。
+保持 Workflow Body 精简（<500行）。
+
+**模式 1：带引用的高级指南**
 
 ```markdown
-使用 `view_file` 工具读取参考文档。路径格式：
-`{工作区根目录}/.agent/resources/skill-creator/references/{文件名}`
+# PDF Processing
 
-| 内容 | 文件名 |
-|-----|--------|
-| 工作流模式 | `workflows.md` |
-| 输出格式模式 | `output-patterns.md` |
-| Antigravity 平台参考 | `antigravity-reference.md` |
+## 高级功能
 
-**操作步骤**：
-1. 确定工作区根目录
-2. 拼接完整绝对路径
-3. 调用 view_file 读取
+- **表单填充**: 详见 [form-guide](file:///abs/path/to/.agent/resources/pdf/references/forms.md)
+- **API 参考**: 详见 [api-ref](file:///abs/path/to/.agent/resources/pdf/references/reference.md)
 ```
 
----
+**模式 2：特定领域组织**
+
+对于多领域 Skill，按领域组织内容以避免加载无关上下文。
+
+**模式 3：条件细节**
+
+展示基本内容，链接到高级内容。
+
+**重要准则**：
+- **绝对路径**：在 Antigravity 中引用资源文件时，必须使用绝对路径或基于 workspace 的明确路径。
 
 ## Skill 创建流程
 
-### 模式切换建议
+创建 Skill 涉及以下步骤：
 
-创建 skill 时遵循以下模式流转：
+1. **理解**：通过具体示例理解 Skill
+2. **规划**：规划可复用的 Skill 内容 (scripts, references, assets)
+3. **初始化**：创建目录结构
+4. **编辑**：编写资源和 Workflow 文件
+5. **验证**：测试并迭代
 
-| 阶段 | 模式 | 主要工具 |
-|-----|------|---------|
-| 理解需求 | PLANNING | `view_file`, `grep_search`, `browser_subagent` |
-| 设计结构 | PLANNING | 创建 `implementation_plan.md` |
-| 创建文件 | EXECUTION | `write_to_file`, `run_command` |
-| 验证测试 | VERIFICATION | 创建 `walkthrough.md` |
+### 步骤 1：理解 Skill
 
-### 步骤 1：理解具体用例
+明确 Skill 将如何被使用。例如："用户会说'帮我去掉这张图的红眼'或'旋转这张图'。"
 
-通过提问收集信息：
-- "这个 skill 应该支持什么功能？"
-- "能给出一些使用示例吗？"
-- "什么情况下应该触发这个 skill？"
+### 步骤 2：规划内容
 
-**使用 task.md 追踪**：创建任务清单记录需求收集进度。
+分析示例以确定需要哪些资源：
+- 旋转 PDF -> 需要 `scripts/rotate_pdf.py`
+- 构建 Webapp -> 需要 `assets/hello-world/` 模板
+- 查询数据库 -> 需要 `references/schema.md`
 
-### 步骤 2：规划可复用内容
+### 步骤 3：初始化结构
 
-分析每个用例：
-1. 考虑如何从零执行
-2. 识别重复执行时有帮助的脚本、参考资料和资产
+在 Antigravity 中，你需要创建正确的文件结构。你可以使用 Agent 指令来自动创建。
 
-**在线研究（可选）**：使用 `browser_subagent` 收集最佳实践或 API 文档。
-
-### 步骤 3：创建目录结构
-
-// turbo
+推荐结构：
 ```bash
-# 在项目根目录创建 skill 目录
 mkdir -p .agent/workflows
-mkdir -p .agent/resources/skill-name/scripts
-mkdir -p .agent/resources/skill-name/references
-mkdir -p .agent/resources/skill-name/assets
+mkdir -p .agent/resources/<skill-name>/{scripts,references,assets}
 ```
 
-### 步骤 4：编写主文件
+### 步骤 4：编辑 Skill
 
-**YAML Frontmatter**：
+编写 `.agent/workflows/<skill-name>.md` 和相关资源。
 
+#### 学习经过验证的设计模式
+
+参考以下资源（位于 `.agent/resources/skill-creator/references/`）：
+
+- **多步骤流程**: 见 `workflows.md` 了解顺序工作流和条件逻辑
+- **特定输出格式**: 见 `output-patterns.md` 了解模板和示例模式
+- **平台能力**: 见 `antigravity-reference.md` 了解如何利用 Antigravity 工具
+
+#### 编写 Workflow 文件
+
+**Frontmatter**:
 ```yaml
 ---
-trigger: model  # 或 always, manual（仅 Rule 需要）
-description: 详细描述 skill 功能和触发场景。包含所有"何时使用"信息。
-globs:          # 可选，文件类型过滤
+name: my-skill
+description: Comprehensive guide for [task]. Use when [specific context].
 ---
 ```
 
-**主体内容**：
-- 使用祈使语气
-- 保持简洁（<500 行）
-- 将详细内容拆分到 resources 文件
+**Body**:
+编写清晰的指令。
 
-### 步骤 5：验证和迭代
+### 步骤 5：验证与迭代
 
-1. 在真实任务中使用
-2. 注意困难或低效之处
-3. 更新内容并再次测试
-
-**使用 notify_user**：在验证完成后创建 `walkthrough.md` 并通知用户审核。
+在实际任务中使用 Skill，观察效果，并根据反馈调整。
 
 ---
-
-## Antigravity 独有能力增强
-
-创建 skill 时可利用以下 Antigravity 独有能力：
-
-### browser_subagent - 浏览器子代理
-
-适用于需要在线研究的 skill：
-
-```markdown
-### 在线研究（可选）
-如需最新信息或验证，使用 `browser_subagent` 工具：
-- 查询 API 文档最新版本
-- 验证外部链接有效性
-- 收集行业最佳实践
-```
-
-### generate_image - 图像生成
-
-适用于 UI 设计类 skill：
-
-```markdown
-### 资产生成
-使用 `generate_image` 工具生成：
-- UI 组件预览
-- 图标和插图
-- 原型设计
-```
-
-### 用户确认点（notify_user）
-
-需要用户决策时明确指出：
-
-```markdown
-### 用户确认点
-使用 `notify_user` 工具在以下节点请求确认：
-- 方案设计完成后（设置 BlockedOnUser: true）
-- 关键变更执行前
-- 验证完成时（设置 BlockedOnUser: false）
-```
-
----
-
-## 设计模式参考
-
-需要了解更多模式时，使用 `view_file` 读取：
-
-- **多步骤流程**：`{根目录}/.agent/resources/skill-creator/references/workflows.md`
-- **输出格式/质量标准**：`{根目录}/.agent/resources/skill-creator/references/output-patterns.md`
-- **Antigravity 平台能力**：`{根目录}/.agent/resources/skill-creator/references/antigravity-reference.md`
-
----
-
-## 关键词
-
-skill, workflow, rule, 创建技能, 扩展能力, agent 定制, Antigravity
+**注意**：在 Antigravity 中，我们不使用 `.skill` 压缩包格式，而是直接以文件形式存在于 `.agent` 目录中。
