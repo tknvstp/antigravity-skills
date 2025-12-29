@@ -1,94 +1,129 @@
-> **Note:** This repository contains Anthropic's implementation of skills for Claude. For information about the Agent Skills standard, see [agentskills.io](http://agentskills.io).
+# Antigravity Skills
 
-# Skills
-Skills are folders of instructions, scripts, and resources that Claude loads dynamically to improve performance on specialized tasks. Skills teach Claude how to complete specific tasks in a repeatable way, whether that's creating documents with your company's brand guidelines, analyzing data using your organization's specific workflows, or automating personal tasks.
+为 [Antigravity](https://developers.google.com/idx/guides/get-started-antigravity) 平台设计的 Skills 和 Workflows，帮助扩展 AI Agent 能力。
 
-For more information, check out:
-- [What are skills?](https://support.claude.com/en/articles/12512176-what-are-skills)
-- [Using skills in Claude](https://support.claude.com/en/articles/12512180-using-skills-in-claude)
-- [How to create custom skills](https://support.claude.com/en/articles/12512198-creating-custom-skills)
-- [Equipping agents for the real world with Agent Skills](https://anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills)
+> **Antigravity** 是 Google 推出的 AI 辅助编程工具，基于 VS Code 构建，集成了强大的 AI Agent 功能。
 
-# About This Repository
-
-This repository contains skills that demonstrate what's possible with Claude's skills system. These skills range from creative applications (art, music, design) to technical tasks (testing web apps, MCP server generation) to enterprise workflows (communications, branding, etc.).
-
-Each skill is self-contained in its own folder with a `SKILL.md` file containing the instructions and metadata that Claude uses. Browse through these skills to get inspiration for your own skills or to understand different patterns and approaches.
-
-Many skills in this repo are open source (Apache 2.0). We've also included the document creation & editing skills that power [Claude's document capabilities](https://www.anthropic.com/news/create-files) under the hood in the [`skills/docx`](./skills/docx), [`skills/pdf`](./skills/pdf), [`skills/pptx`](./skills/pptx), and [`skills/xlsx`](./skills/xlsx) subfolders. These are source-available, not open source, but we wanted to share these with developers as a reference for more complex skills that are actively used in a production AI application.
-
-## Disclaimer
-
-**These skills are provided for demonstration and educational purposes only.** While some of these capabilities may be available in Claude, the implementations and behaviors you receive from Claude may differ from what is shown in these skills. These skills are meant to illustrate patterns and possibilities. Always test skills thoroughly in your own environment before relying on them for critical tasks.
-
-# Skill Sets
-- [./skills](./skills): Skill examples for Creative & Design, Development & Technical, Enterprise & Communication, and Document Skills
-- [./spec](./spec): The Agent Skills specification
-- [./template](./template): Skill template
-
-# Try in Claude Code, Claude.ai, and the API
-
-## Claude Code
-You can register this repository as a Claude Code Plugin marketplace by running the following command in Claude Code:
-```
-/plugin marketplace add anthropics/skills
-```
-
-Then, to install a specific set of skills:
-1. Select `Browse and install plugins`
-2. Select `anthropic-agent-skills`
-3. Select `document-skills` or `example-skills`
-4. Select `Install now`
-
-Alternatively, directly install either Plugin via:
-```
-/plugin install document-skills@anthropic-agent-skills
-/plugin install example-skills@anthropic-agent-skills
-```
-
-After installing the plugin, you can use the skill by just mentioning it. For instance, if you install the `document-skills` plugin from the marketplace, you can ask Claude Code to do something like: "Use the PDF skill to extract the form fields from `path/to/some-file.pdf`"
-
-## Claude.ai
-
-These example skills are all already available to paid plans in Claude.ai. 
-
-To use any skill from this repository or upload custom skills, follow the instructions in [Using skills in Claude](https://support.claude.com/en/articles/12512180-using-skills-in-claude#h_a4222fa77b).
-
-## Claude API
-
-You can use Anthropic's pre-built skills, and upload custom skills, via the Claude API. See the [Skills API Quickstart](https://docs.claude.com/en/api/skills-guide#creating-a-skill) for more.
-
-# Creating a Basic Skill
-
-Skills are simple to create - just a folder with a `SKILL.md` file containing YAML frontmatter and instructions. You can use the **template-skill** in this repository as a starting point:
-
-```markdown
----
-name: my-skill-name
-description: A clear description of what this skill does and when to use it
 ---
 
-# My Skill Name
+## 📁 目录结构
 
-[Add your instructions here that Claude will follow when this skill is active]
-
-## Examples
-- Example usage 1
-- Example usage 2
-
-## Guidelines
-- Guideline 1
-- Guideline 2
+```
+.agent/
+├── workflows/                      # 用户显式调用的工作流 (/命令名)
+│   ├── skill-creator.md            # 创建新 skill 的指南
+│   └── skill-migrator.md           # 从 Claude Code 迁移 skill 的指南
+└── resources/                      # 辅助资源
+    └── skill-creator/
+        ├── antigravity-reference.md  # Antigravity 平台核心能力参考
+        ├── workflows.md              # 工作流模式示例
+        └── output-patterns.md        # 输出格式模式示例
 ```
 
-The frontmatter requires only two fields:
-- `name` - A unique identifier for your skill (lowercase, hyphens for spaces)
-- `description` - A complete description of what the skill does and when to use it
+---
 
-The markdown content below contains the instructions, examples, and guidelines that Claude will follow. For more details, see [How to create custom skills](https://support.claude.com/en/articles/12512198-creating-custom-skills).
+## 🚀 快速开始
 
-# Partner Skills
+### 使用 Workflow
 
-Skills are a great way to teach Claude how to get better at using specific pieces of software. As we see awesome example skills from partners, we may highlight some of them here:
+在 Antigravity 中直接使用斜线命令：
 
-- **Notion** - [Notion Skills for Claude](https://www.notion.so/notiondevs/Notion-Skills-for-Claude-28da4445d27180c7af1df7d8615723d0)
+- `/skill-creator` - 创建新的 skill 或 workflow
+- `/skill-migrator` - 将 Claude Code skill 迁移到 Antigravity 格式
+
+### 安装
+
+将 `.agent/` 目录复制到你的项目根目录：
+
+```bash
+cp -r .agent/ /your/project/root/
+```
+
+---
+
+## 📖 Workflows 说明
+
+### skill-creator
+
+创建新的 skill 或 workflow，扩展 Agent 能力。
+
+**适用场景**：
+- 创建特定领域的专业知识包
+- 封装常用工作流程
+- 集成工具和脚本
+
+**核心特性**：
+- 渐进式披露设计（元数据 → 主体 → 资源）
+- Antigravity 工具集成指导
+- 模式切换建议（PLANNING / EXECUTION / VERIFICATION）
+
+### skill-migrator
+
+将已有的 Claude Code Skills 迁移到 Antigravity 格式。
+
+**适用场景**：
+- 迁移 Claude Code 的 `.skill` 或 `SKILL.md` 文件
+- 利用 Antigravity 独有能力增强
+- 保持 skill 功能的同时优化结构
+
+**核心特性**：
+- 格式映射表（Claude Code → Antigravity）
+- 能力增强映射（新增 browser_subagent, generate_image 等）
+- 迁移决策树和验证清单
+
+---
+
+## 🛠️ Antigravity 核心能力
+
+这些 workflow 充分利用了 Antigravity 的独有能力：
+
+| 能力 | 说明 |
+|-----|------|
+| `task_boundary` | 任务模式管理（PLANNING/EXECUTION/VERIFICATION） |
+| `browser_subagent` | 浏览器子代理，支持网页研究和 UI 测试 |
+| `notify_user` | 结构化用户通信，支持阻塞式确认 |
+| `generate_image` | 图像生成和编辑 |
+| Artifact System | task.md / implementation_plan.md / walkthrough.md |
+
+详细说明请参考 [antigravity-reference.md](.agent/resources/skill-creator/antigravity-reference.md)。
+
+---
+
+## 📚 参考来源
+
+本项目参考了以下优秀资源：
+
+### Claude Code Skills
+
+- **来源**：[Anthropic Courses - Skills](https://github.com/anthropics/courses/tree/master/prompt_engineering_interactive_tutorial)
+- **内容**：Skill 设计原则、结构规范、最佳实践
+- **许可**：遵循 Anthropic 课程许可
+
+### Antigravity Prompts
+
+- **来源**：[tfriedel/antigravity_prompts](https://github.com/tfriedel/antigravity_prompts)
+- **内容**：Antigravity 系统 prompt 逆向工程分析
+- **用途**：理解 Antigravity 平台机制和工具能力
+
+---
+
+## 📄 许可
+
+本项目仅供学习和参考使用。
+
+- Skill 设计理念来自 Anthropic 官方课程
+- Antigravity 平台参考来自社区逆向工程项目
+- 请遵循各来源项目的许可协议
+
+---
+
+## 🤝 贡献
+
+欢迎提交 Issue 和 Pull Request！
+
+如果你有：
+- 新的 skill 想法
+- 优化建议
+- Bug 报告
+
+请随时联系或提交贡献。
